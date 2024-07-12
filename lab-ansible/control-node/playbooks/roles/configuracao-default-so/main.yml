@@ -1,0 +1,14 @@
+- name: Update apt package index
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages to the latest version
+  apt:
+    upgrade: dist
+    autoremove: yes
+    autoclean: yes
+
+- name: git client install
+  apt:
+    name: git
+    state: latest
