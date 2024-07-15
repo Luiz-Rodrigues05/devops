@@ -1,26 +1,16 @@
 ---
 - name: configure app server
   hosts: app01
-
   user: vagrant
   become: yes
 
   vars:
-    - dbhost: "db01"
-    - dbname: "notes"
-    - dbusername: "notesapps"
-    - dbpassword: "123456"
+    dbhost: "db01"
+    dbname: "notes"
+    dbusername: "notesapp"
+    dbpassword: "123456"
+    
   tasks:
-    - name: Config ansible lab hosts
-      lineinfile: 
-        dest: /etc/hosts
-        state: present
-        line: "{{item}}"
-      with_items:
-        - 192.168.56.2 control-node
-        - 192.168.56.3 app01
-        - 192.168.56.4 db01
-
     - name: add app user
       user:
         name: app
@@ -75,11 +65,12 @@
 
     - name: generate app packages
       command: mvn -f /opt/notes/pom.xml package
-      become_user: app
+      # become: yes
+      # become_user: app
 
     - name: register package version
       shell: 
-        cmd: mvn -o -q -Dexec.executable=echo -Dexec.args='#${project.version}'
+        cmd: mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\['
         chdir: /opt/notes/
       register: app_version
 
@@ -87,7 +78,7 @@
       template:
         src: etc/systemd/system/notes.service
         dest: /etc/systemd/system/notes.service
-        notify: reload daemon
+      notify: reload daemon
 
     - name: start notes service
       service:
