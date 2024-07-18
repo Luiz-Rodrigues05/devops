@@ -1,0 +1,19 @@
+FROM openjdk:11-jdk-slim
+RUN addgroup --system notes && adduser --system --ingroup notes notes
+ENV MAVEN_VERSION 3.5.4
+ENV MAVEN_HOME /usr/lib/mvn
+ENV PATH=${MAVEN_HOME}/bin:${PATH}
+RUN apt-get update && apt-get install -y wget git && \
+    wget http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz && \
+    tar -zxvf apache-maven-$MAVEN_VERSION-bin.tar.gz && \
+    rm apache-maven-$MAVEN_VERSION-bin.tar.gz && \
+    mv apache-maven-$MAVEN_VERSION $MAVEN_HOME && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+USER notes:notes
+WORKDIR /opt/note
+RUN git clone https://github.com/callicoder/spring-boot-mysql-rest-api-tutorial.git /opt/note
+RUN mvn package -Dmaven.test.skip=true
+ARG JAR_FILE=*.jar
+RUN cp ./target/easy-notes-1.0.0.jar /opt/note/easy-note.jar
+COPY application.properties application.properties
+ENTRYPOINT [ "java", "-jar", "/easy-note.jar"]
