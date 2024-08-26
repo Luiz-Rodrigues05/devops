@@ -1,0 +1,27 @@
+name: make new release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: "make new release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Checkout private action repository
+        run: |
+          git clone https://$PAT_TOKEN@github.com/Luiz-Rodrigues05/action-automatic-releases.git
+          cd action-automatic-releases
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Create Release
+        run: |
+          node action-automatic-releases/dist/index.js
+        env:
+          REPO_TOKEN: ${{ secrets.PAT_TOKEN }}

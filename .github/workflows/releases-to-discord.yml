@@ -1,0 +1,34 @@
+name: Send release changelog to Discord
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  github-releases-to-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Checkout private action repository
+        run: |
+          git clone https://$PAT_TOKEN@github.com/Luiz-Rodrigues05/github-releases-to-discord.git
+          cd github-releases-to-discord
+          npm install
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Run Github Releases To Discord Script
+        run: |
+          node github-releases-to-discord/index.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          COLOR: "2105893"
+          USERNAME: "Release Changelog"
+          AVATAR_URL: "https://cdn.discordapp.com/attachments/1147227022897188894/1268578971142983763/Icon-_Redu.png?ex=66acefbb&is=66ab9e3b&hm=2fc7112711ad2e22c4e7702b44fd809ffe0f0f4a09e410a4f8055b0638161651&"
+          CONTENT: "||@everyone||\n\nUma nova release foi lançada em produção! Segue abaixo as modificações :wink:"
+          FOOTER_TITLE: "Changelog"
+          FOOTER_ICON_URL: "https://cdn.discordapp.com/avatars/487431320314576937/bd64361e4ba6313d561d54e78c9e7171.png"
+          FOOTER_TIMESTAMP: "true"
